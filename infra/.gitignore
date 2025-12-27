@@ -1,0 +1,49 @@
+#######################################
+# Terraform
+#######################################
+
+# Diretório de cache do Terraform
+.terraform/
+**/.terraform/*
+
+# State (NUNCA versionar)
+*.tfstate
+*.tfstate.*
+
+# Logs de crash
+crash.log
+crash.*.log
+
+# Arquivos de lock (opcional – ver observação abaixo)
+.terraform.lock.hcl
+
+# Variáveis sensíveis / locais
+*.tfvars
+*.tfvars.json
+
+# Override files (uso local)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Plan files
+*.tfplan
+
+#######################################
+# Credenciais e configs locais
+#######################################
+
+.env
+.env.*
+*.pem
+*.key
+
+#######################################
+# Editor / SO
+#######################################
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
