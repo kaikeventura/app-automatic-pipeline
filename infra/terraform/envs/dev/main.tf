@@ -139,6 +139,38 @@ module "ecs" {
   sqs_payment_result_queue_url     = module.sqs_payment_result_queue.queue_url
 }
 
+module "codedeploy" {
+  source = "../../modules/codedeploy_ecs"
+
+  project = "app-automatic-pipeline"
+  env     = "dev"
+
+  ecs_cluster_name = module.ecs.cluster_name
+  ecs_service_name = module.ecs.service_name
+
+  listener_arn = module.alb.listener_arn
+  blue_tg_arn   = module.alb.blue_target_group_arn
+  green_tg_arn  = module.alb.green_target_group_arn
+}
+
+module "github_oidc" {
+  source = "../../modules/github_oidc"
+
+  project = "app-automatic-pipeline"
+  env     = "dev"
+  region  = "us-east-1"
+
+  github_owner = "kaikeventura"
+  github_repo  = "https://github.com/kaikeventura/app-automatic-pipeline"
+
+  ecr_repo_arn = "arn:aws:ecr:us-east-1:${data.aws_caller_identity.current.account_id}:repository/${module.ecr.repository_name}"
+
+  codedeploy_app_name         = module.codedeploy.codedeploy_app_name
+  codedeploy_deployment_group = module.codedeploy.codedeploy_deployment_group
+}
+
+data "aws_caller_identity" "current" {}
+
 output "vpc_id" {
   value = module.network.vpc_id
 }
@@ -197,4 +229,24 @@ output "ecs_service_name" {
 
 output "ecs_task_definition_arn" {
   value = module.ecs.task_definition_arn
+}
+
+output "ecs_task_role_arn" {
+  value = module.ecs.task_role_arn
+}
+
+output "ecs_task_execution_role_arn" {
+  value = module.ecs.task_execution_role_arn
+}
+
+output "codedeploy_app_name" {
+  value = module.codedeploy.codedeploy_app_name
+}
+
+output "codedeploy_deployment_group" {
+  value = module.codedeploy.codedeploy_deployment_group
+}
+
+output "github_actions_role_arn" {
+  value = module.github_oidc.github_role_arn
 }
