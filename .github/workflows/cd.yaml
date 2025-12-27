@@ -102,26 +102,41 @@ jobs:
         run: |
           sed "s|TASK_DEFINITION_ARN|${{ steps.register.outputs.TASKDEF_ARN }}|g" \
             deploy/appspec.yaml > deploy/appspec.rendered.yaml
+      
+      - name: Validate rendered AppSpec
+        run: |
+          echo "=== appspec.rendered.yaml ==="
+          cat deploy/appspec.rendered.yaml
 
       - name: Create CodeDeploy deployment
         id: deploy
         run: |
-          CONTENT=$(python - <<'PY'
+          python - <<'PY'
+          import json, os
           from pathlib import Path
-          import json
-          print(json.dumps(Path("deploy/appspec.rendered.yaml").read_text()))
+
+          content = Path("deploy/appspec.rendered.yaml").read_text()
+
+          payload = {
+            "applicationName": os.environ["CODEDEPLOY_APP"],
+            "deploymentGroupName": os.environ["CODEDEPLOY_DG"],
+            "revision": {
+              "revisionType": "AppSpecContent",
+              "appSpecContent": {"content": content}
+            },
+            "description": f"Deploy {os.environ.get('GITHUB_SHA','')}"
+          }
+
+          Path("deploy/deployment.json").write_text(json.dumps(payload))
           PY
-                    )
 
           DEPLOYMENT_ID=$(aws deploy create-deployment \
-            --application-name "${CODEDEPLOY_APP}" \
-            --deployment-group-name "${CODEDEPLOY_DG}" \
-            --revision "revisionType=AppSpecContent,appSpecContent={content=${CONTENT}}" \
-            --description "Deploy $GITHUB_SHA" \
+            --cli-input-json file://deploy/deployment.json \
             --query 'deploymentId' --output text)
 
           echo "DEPLOYMENT_ID=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
           echo "Created deployment: $DEPLOYMENT_ID"
+
 
       - name: Wait deployment succeed
         run: |
