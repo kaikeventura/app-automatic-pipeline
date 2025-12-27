@@ -68,11 +68,13 @@ data "aws_iam_policy_document" "policy" {
   # CodeDeploy deploy
   statement {
     actions = [
+      "codedeploy:RegisterApplicationRevision",
       "codedeploy:CreateDeployment",
       "codedeploy:GetDeployment",
       "codedeploy:GetDeploymentConfig",
       "codedeploy:GetApplication",
-      "codedeploy:GetDeploymentGroup"
+      "codedeploy:GetDeploymentGroup",
+      "codedeploy:ListDeployments"
     ]
     resources = ["*"]
   }
