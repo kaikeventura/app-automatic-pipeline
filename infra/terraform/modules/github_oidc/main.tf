@@ -79,14 +79,13 @@ data "aws_iam_policy_document" "policy" {
 
   # ECS/ALB read (às vezes necessário em scripts de deploy)
   statement {
-    actions = [
-      "ecs:DescribeServices",
-      "ecs:DescribeTaskDefinition",
-      "ecs:RegisterTaskDefinition",
-      "iam:PassRole"
+    actions = ["iam:PassRole"]
+    resources = [
+      "arn:aws:iam::729591273848:role/app-automatic-pipeline-dev-ecs-exec-role",
+      "arn:aws:iam::729591273848:role/app-automatic-pipeline-dev-ecs-task-role"
     ]
-    resources = ["*"]
   }
+
 }
 
 resource "aws_iam_policy" "github" {
