@@ -1,7 +1,6 @@
 package com.kaikeventura.app_automatic_pipeline.listener;
 
 import com.kaikeventura.app_automatic_pipeline.domain.Event;
-import com.kaikeventura.app_automatic_pipeline.domain.Ticket;
 import com.kaikeventura.app_automatic_pipeline.repository.EventRepository;
 import com.kaikeventura.app_automatic_pipeline.repository.TicketRepository;
 import io.awspring.cloud.sqs.annotation.SqsListener;

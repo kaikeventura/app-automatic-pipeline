@@ -67,6 +67,11 @@ jobs:
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPO }}:${{ github.sha }}
 
+      - name: Show role trust
+        run: |
+          aws iam get-role --role-name app-automatic-pipeline-dev-ecs-exec-role --query 'Role.AssumeRolePolicyDocument' --output json
+          aws iam get-role --role-name app-automatic-pipeline-dev-ecs-task-role --query 'Role.AssumeRolePolicyDocument' --output json
+
       - name: Register task definition
         id: register
         run: |
@@ -84,16 +89,21 @@ jobs:
       - name: Create CodeDeploy deployment
         id: deploy
         run: |
-          CONTENT=$(python - <<'PY' from pathlib import Path import json print(json.dumps(Path("deploy/appspec.rendered.yaml").read_text()))PY)
-          DEPLOYMENT_ID=$(aws deploy create-deployment \
-            --application-name "${CODEDEPLOY_APP}" \
-            --deployment-group-name "${CODEDEPLOY_DG}" \
-            --revision "revisionType=AppSpecContent,appSpecContent={content=${CONTENT}}" \
-            --description "Deploy $GITHUB_SHA" \
-            --query 'deploymentId' --output text)
+          CONTENT=$(python - <<'PY'
+          from pathlib import Path
+          import json
+          print(json.dumps(Path("deploy/appspec.rendered.yaml").read_text()))
+          PY
+          )
+                    DEPLOYMENT_ID=$(aws deploy create-deployment \
+                      --application-name "${CODEDEPLOY_APP}" \
+                      --deployment-group-name "${CODEDEPLOY_DG}" \
+                      --revision "revisionType=AppSpecContent,appSpecContent={content=${CONTENT}}" \
+                      --description "Deploy $GITHUB_SHA" \
+                      --query 'deploymentId' --output text)
 
-          echo "DEPLOYMENT_ID=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
-          echo "Created deployment: $DEPLOYMENT_ID"
+                    echo "DEPLOYMENT_ID=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+                    echo "Created deployment: $DEPLOYMENT_ID"
 
       - name: Wait deployment succeed
         run: |
