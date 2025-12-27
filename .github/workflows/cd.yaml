@@ -70,22 +70,22 @@ jobs:
         id: register
         run: |
           CLEAN=$(python - <<'PY'
-import json, os
+          import json, os
 
-td = json.loads(os.environ["TD_JSON"])
+          td = json.loads(os.environ["TD_JSON"])
 
-# remove campos read-only
-for k in ["taskDefinitionArn","revision","status","requiresAttributes","compatibilities","registeredAt","registeredBy"]:
-    td.pop(k, None)
+          # remove campos read-only
+          for k in ["taskDefinitionArn","revision","status","requiresAttributes","compatibilities","registeredAt","registeredBy"]:
+              td.pop(k, None)
 
-# troca imagem do container api
-new_image = os.environ["NEW_IMAGE"]
-for c in td["containerDefinitions"]:
-    if c.get("name") == "api":
-        c["image"] = new_image
+          # troca imagem do container api
+          new_image = os.environ["NEW_IMAGE"]
+          for c in td["containerDefinitions"]:
+              if c.get("name") == "api":
+                  c["image"] = new_image
 
-print(json.dumps(td))
-PY
+          print(json.dumps(td))
+          PY
           )
 
           ARN=$(aws ecs register-task-definition \
@@ -107,11 +107,11 @@ PY
         id: deploy
         run: |
           CONTENT=$(python - <<'PY'
-from pathlib import Path
-import json
-print(json.dumps(Path("deploy/appspec.rendered.yaml").read_text()))
-PY
-          )
+          from pathlib import Path
+          import json
+          print(json.dumps(Path("deploy/appspec.rendered.yaml").read_text()))
+          PY
+                    )
 
           DEPLOYMENT_ID=$(aws deploy create-deployment \
             --application-name "${CODEDEPLOY_APP}" \
