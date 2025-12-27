@@ -148,10 +148,11 @@ module "codedeploy" {
   ecs_cluster_name = module.ecs.cluster_name
   ecs_service_name = module.ecs.service_name
 
-  listener_arn = module.alb.listener_arn
-  blue_tg_arn   = module.alb.blue_target_group_arn
-  green_tg_arn  = module.alb.green_target_group_arn
+  listener_arn  = module.alb.listener_arn
+  blue_tg_name  = module.alb.blue_target_group_name
+  green_tg_name = module.alb.green_target_group_name
 }
+
 
 module "github_oidc" {
   source = "../../modules/github_oidc"

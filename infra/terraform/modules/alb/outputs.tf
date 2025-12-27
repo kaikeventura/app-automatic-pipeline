@@ -17,3 +17,11 @@ output "blue_target_group_arn" {
 output "green_target_group_arn" {
   value = aws_lb_target_group.green.arn
 }
+
+output "blue_target_group_name" {
+  value = aws_lb_target_group.blue.name
+}
+
+output "green_target_group_name" {
+  value = aws_lb_target_group.green.name
+}

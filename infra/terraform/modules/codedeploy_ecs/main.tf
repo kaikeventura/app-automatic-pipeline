@@ -74,11 +74,11 @@ resource "aws_codedeploy_deployment_group" "this" {
       }
 
       target_group {
-        name = split("/", var.blue_tg_arn)[length(split("/", var.blue_tg_arn)) - 1]
+        name = var.blue_tg_name
       }
 
       target_group {
-        name = split("/", var.green_tg_arn)[length(split("/", var.green_tg_arn)) - 1]
+        name = var.green_tg_name
       }
     }
   }
