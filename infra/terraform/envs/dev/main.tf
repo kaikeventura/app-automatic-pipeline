@@ -161,7 +161,7 @@ module "github_oidc" {
   region  = "us-east-1"
 
   github_owner = "kaikeventura"
-  github_repo  = "https://github.com/kaikeventura/app-automatic-pipeline"
+  github_repo  = "app-automatic-pipeline"
 
   ecr_repo_arn = "arn:aws:ecr:us-east-1:${data.aws_caller_identity.current.account_id}:repository/${module.ecr.repository_name}"
 

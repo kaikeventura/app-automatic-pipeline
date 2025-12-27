@@ -27,6 +27,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Show GitHub context
+        run: |
+          echo "repo=$GITHUB_REPOSITORY"
+          echo "ref=$GITHUB_REF"
+
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
