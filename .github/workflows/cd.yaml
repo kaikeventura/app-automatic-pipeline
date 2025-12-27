@@ -59,27 +59,44 @@ jobs:
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPO }}:${{ github.sha }}
             ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPO }}:latest
 
-      - name: Render task definition with new image
-        id: render
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: deploy/taskdef.json
-          container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPO }}:${{ github.sha }}
-
-      - name: Show role trust
+      - name: Prepare deploy variables
         run: |
-          aws iam get-role --role-name app-automatic-pipeline-dev-ecs-exec-role --query 'Role.AssumeRolePolicyDocument' --output json
-          aws iam get-role --role-name app-automatic-pipeline-dev-ecs-task-role --query 'Role.AssumeRolePolicyDocument' --output json
+          echo "NEW_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPO }}:${{ github.sha }}" >> $GITHUB_ENV
+          echo "TD_JSON<<EOF" >> $GITHUB_ENV
+          aws ecs describe-task-definition --task-definition app-automatic-pipeline-dev-api --query 'taskDefinition' --output json >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-      - name: Register task definition
+      - name: Register new task definition revision (safe)
         id: register
         run: |
-          TASKDEF_ARN=$(aws ecs register-task-definition \
-            --cli-input-json file://${{ steps.render.outputs.task-definition }} \
+          CLEAN=$(python - <<'PY'
+import json, os
+
+td = json.loads(os.environ["TD_JSON"])
+
+# remove campos read-only
+for k in ["taskDefinitionArn","revision","status","requiresAttributes","compatibilities","registeredAt","registeredBy"]:
+    td.pop(k, None)
+
+# troca imagem do container api
+new_image = os.environ["NEW_IMAGE"]
+for c in td["containerDefinitions"]:
+    if c.get("name") == "api":
+        c["image"] = new_image
+
+print(json.dumps(td))
+PY
+          )
+
+          ARN=$(aws ecs register-task-definition \
+            --cli-input-json "$CLEAN" \
             --query 'taskDefinition.taskDefinitionArn' --output text)
-          echo "TASKDEF_ARN=$TASKDEF_ARN" >> $GITHUB_OUTPUT
-          echo "Registered: $TASKDEF_ARN"
+
+          echo "TASKDEF_ARN=$ARN" >> $GITHUB_OUTPUT
+          echo "Registered: $ARN"
+        env:
+          TD_JSON: ${{ env.TD_JSON }}
+          NEW_IMAGE: ${{ env.NEW_IMAGE }}
 
       - name: Generate AppSpec for CodeDeploy
         run: |
@@ -90,20 +107,21 @@ jobs:
         id: deploy
         run: |
           CONTENT=$(python - <<'PY'
-          from pathlib import Path
-          import json
-          print(json.dumps(Path("deploy/appspec.rendered.yaml").read_text()))
-          PY
+from pathlib import Path
+import json
+print(json.dumps(Path("deploy/appspec.rendered.yaml").read_text()))
+PY
           )
-                    DEPLOYMENT_ID=$(aws deploy create-deployment \
-                      --application-name "${CODEDEPLOY_APP}" \
-                      --deployment-group-name "${CODEDEPLOY_DG}" \
-                      --revision "revisionType=AppSpecContent,appSpecContent={content=${CONTENT}}" \
-                      --description "Deploy $GITHUB_SHA" \
-                      --query 'deploymentId' --output text)
 
-                    echo "DEPLOYMENT_ID=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
-                    echo "Created deployment: $DEPLOYMENT_ID"
+          DEPLOYMENT_ID=$(aws deploy create-deployment \
+            --application-name "${CODEDEPLOY_APP}" \
+            --deployment-group-name "${CODEDEPLOY_DG}" \
+            --revision "revisionType=AppSpecContent,appSpecContent={content=${CONTENT}}" \
+            --description "Deploy $GITHUB_SHA" \
+            --query 'deploymentId' --output text)
+
+          echo "DEPLOYMENT_ID=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+          echo "Created deployment: $DEPLOYMENT_ID"
 
       - name: Wait deployment succeed
         run: |

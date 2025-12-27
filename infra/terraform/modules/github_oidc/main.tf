@@ -86,6 +86,14 @@ data "aws_iam_policy_document" "policy" {
     ]
   }
 
+  statement {
+    actions = [
+      "ecs:DescribeTaskDefinition",
+      "ecs:RegisterTaskDefinition"
+    ]
+    resources = ["*"]
+  }
+
 }
 
 resource "aws_iam_policy" "github" {
