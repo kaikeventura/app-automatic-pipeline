@@ -194,3 +194,22 @@ resource "aws_ecs_service" "this" {
 
   tags = local.tags
 }
+
+data "aws_iam_policy_document" "execution_extra" {
+  statement {
+    sid     = "ReadDbSecret"
+    actions = ["secretsmanager:GetSecretValue"]
+    resources = [var.db_secret_arn]
+  }
+}
+
+resource "aws_iam_policy" "execution_extra" {
+  name   = "${local.name}-ecs-exec-extra"
+  policy = data.aws_iam_policy_document.execution_extra.json
+  tags   = local.tags
+}
+
+resource "aws_iam_role_policy_attachment" "execution_extra_attach" {
+  role       = aws_iam_role.task_execution.name
+  policy_arn = aws_iam_policy.execution_extra.arn
+}
