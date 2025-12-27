@@ -51,10 +51,11 @@ module "vpc_endpoints" {
 
   vpc_id             = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
+  route_table_ids    = module.network.private_route_table_ids
 
-  route_table_ids   = data.aws_route_tables.private.ids
-  security_group_id = module.security.ecs_sg_id
+  vpce_security_group_id = module.security.vpce_sg_id
 }
+
 
 module "ecr" {
   source = "../../modules/ecr"

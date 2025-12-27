@@ -184,5 +184,13 @@ resource "aws_ecs_service" "this" {
     type = "CODE_DEPLOY"
   }
 
+  lifecycle {
+    ignore_changes = [
+      task_definition,
+      desired_count
+    ]
+  }
+
+
   tags = local.tags
 }

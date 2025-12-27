@@ -41,7 +41,7 @@ resource "aws_vpc_endpoint" "interface" {
   vpc_endpoint_type = "Interface"
 
   subnet_ids         = var.private_subnet_ids
-  security_group_ids = [var.security_group_id]
+  security_group_ids = [var.vpce_security_group_id]
 
   private_dns_enabled = true
 

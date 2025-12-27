@@ -13,6 +13,4 @@ variable "route_table_ids" {
   type = list(string)
 }
 
-variable "security_group_id" {
-  type = string
-}
+variable "vpce_security_group_id" { type = string }
