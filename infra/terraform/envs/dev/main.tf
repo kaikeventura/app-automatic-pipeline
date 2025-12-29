@@ -104,6 +104,15 @@ module "sqs_payment_result_queue" {
   queue_name = "payment-result-queue"
 }
 
+module "domain" {
+  source = "../../modules/domain"
+
+  project = "app-automatic-pipeline"
+  env     = "dev"
+
+  domain_name  = "kaikeventura.com"
+}
+
 module "alb" {
   source = "../../modules/alb"
 
@@ -114,6 +123,20 @@ module "alb" {
   public_subnet_ids     = module.network.public_subnet_ids
   alb_security_group_id = module.security.alb_sg_id
   app_port              = 8080
+
+  certificate_arn = module.domain.certificate_arn
+}
+
+resource "aws_route53_record" "alb_alias" {
+  zone_id = module.domain.zone_id
+  name    = "kaikeventura.com"
+  type    = "A"
+
+  alias {
+    name                   = module.alb.alb_dns_name
+    zone_id                = module.alb.alb_zone_id
+    evaluate_target_health = true
+  }
 }
 
 module "ecs" {
@@ -251,4 +274,8 @@ output "codedeploy_deployment_group" {
 
 output "github_actions_role_arn" {
   value = module.github_oidc.github_role_arn
+}
+
+output "domain_name" {
+  value = module.domain.domain_name
 }
