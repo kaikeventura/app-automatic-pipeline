@@ -187,7 +187,9 @@ resource "aws_ecs_service" "this" {
   lifecycle {
     ignore_changes = [
       task_definition,
-      desired_count
+      desired_count,
+      load_balancer, # Adicionado para evitar conflito com CodeDeploy
+      network_configuration # Opcional, mas bom para evitar conflitos se o CodeDeploy mudar algo
     ]
   }
 
