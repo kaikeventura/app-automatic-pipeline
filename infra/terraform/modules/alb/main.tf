@@ -66,7 +66,7 @@ resource "aws_lb_target_group" "green" {
 }
 
 # =====================
-# Listener HTTP :80 (Redirect to HTTPS if cert provided)
+# Listener HTTP :80
 # =====================
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.this.arn
@@ -88,7 +88,6 @@ resource "aws_lb_listener" "http" {
 # Listener HTTPS :443
 # =====================
 resource "aws_lb_listener" "https" {
-  count             = var.certificate_arn != "" ? 1 : 0
   load_balancer_arn = aws_lb.this.arn
   port              = 443
   protocol          = "HTTPS"

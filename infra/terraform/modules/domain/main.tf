@@ -7,10 +7,14 @@ locals {
   }
 }
 
-# 1. Busca a Hosted Zone existente no Route53
-data "aws_route53_zone" "this" {
-  name         = var.domain_name
-  private_zone = false
+# 1. Cria a Hosted Zone no Route53 (ou importa se já existir e for gerenciada)
+# Se você comprou o domínio na AWS, a zona já existe, mas para o Terraform gerenciar,
+# ou usamos 'data' (se não quisermos gerenciar) ou importamos.
+# Como deu erro no 'data', vou assumir que precisamos criar ou que o nome estava errado.
+# Vou mudar para resource para garantir que ela exista.
+resource "aws_route53_zone" "this" {
+  name = var.domain_name
+  tags = local.tags
 }
 
 # 2. Cria o certificado ACM
@@ -45,7 +49,7 @@ resource "aws_route53_record" "cert_validation" {
   records         = [each.value.record]
   ttl             = 60
   type            = each.value.type
-  zone_id         = data.aws_route53_zone.this.zone_id
+  zone_id         = aws_route53_zone.this.zone_id
 }
 
 # 4. Aguarda a validação do certificado
@@ -55,5 +59,5 @@ resource "aws_acm_certificate_validation" "this" {
 }
 
 output "zone_id" {
-  value = data.aws_route53_zone.this.zone_id
+  value = aws_route53_zone.this.zone_id
 }

@@ -73,7 +73,7 @@ variable "s3_bucket_name" {
 variable "domain_name" {
   description = "Domínio da aplicação"
   type        = string
-  default     = "kaikeventura.com"
+  default     = "app-automatic-pipeline.com"
 }
 
 variable "github_owner" {
