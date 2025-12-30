@@ -23,5 +23,5 @@ output "green_target_group_name" {
 }
 
 output "listener_arn" {
-  value = aws_lb_listener.https.arn
+  value = length(aws_lb_listener.https) > 0 ? aws_lb_listener.https[0].arn : aws_lb_listener.http.arn
 }

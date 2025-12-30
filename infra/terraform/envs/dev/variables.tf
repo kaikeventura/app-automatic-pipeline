@@ -87,3 +87,9 @@ variable "github_repo" {
   type        = string
   default     = "app-automatic-pipeline"
 }
+
+variable "enable_https" {
+  description = "Habilita criação de domínio, certificado e HTTPS"
+  type        = bool
+  default     = false
+}

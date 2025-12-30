@@ -96,6 +96,7 @@ module "sqs_payment_result_queue" {
 
 module "domain" {
   source = "../../modules/domain"
+  count  = var.enable_https ? 1 : 0
 
   project = var.project
   env     = var.env
@@ -114,11 +115,13 @@ module "alb" {
   alb_security_group_id = module.security.alb_sg_id
   app_port              = var.app_port
 
-  certificate_arn = module.domain.certificate_arn
+  # Se HTTPS estiver habilitado, pega o ARN do módulo domain. Se não, passa string vazia.
+  certificate_arn = var.enable_https ? module.domain[0].certificate_arn : ""
 }
 
 resource "aws_route53_record" "alb_alias" {
-  zone_id = module.domain.zone_id
+  count   = var.enable_https ? 1 : 0
+  zone_id = module.domain[0].zone_id
   name    = var.domain_name
   type    = "A"
 

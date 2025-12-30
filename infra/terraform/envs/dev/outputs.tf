@@ -79,5 +79,5 @@ output "github_actions_role_arn" {
 }
 
 output "domain_name" {
-  value = module.domain.domain_name
+  value = var.enable_https ? module.domain[0].domain_name : "HTTPS disabled"
 }
