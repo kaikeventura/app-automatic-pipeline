@@ -47,7 +47,8 @@ Região: `us-east-1`
 ```
 .
 ├── app/                          # Código da aplicação
-│   └── Dockerfile
+│   ├── Dockerfile
+│   └── openapi.yaml              # Contrato da API (Swagger)
 ├── deploy/
 │   ├── appspec.yaml              # AppSpec do CodeDeploy (ECS)
 │   └── appspec.rendered.yaml     # Gerado no pipeline
@@ -61,7 +62,9 @@ Região: `us-east-1`
 │       │   ├── rds
 │       │   ├── sqs
 │       │   ├── vpc_endpoints
-│       │   └── codedeploy_ecs
+│       │   ├── codedeploy_ecs
+│       │   ├── apigateway        # API Gateway (HTTP API)
+│       │   └── domain            # Route53 + ACM (Opcional)
 │       └── envs/dev
 └── .github/workflows/cd.yml
 ```
