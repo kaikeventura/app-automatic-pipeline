@@ -23,5 +23,8 @@ output "green_target_group_name" {
 }
 
 output "listener_arn" {
-  value = length(aws_lb_listener.https) > 0 ? aws_lb_listener.https[0].arn : aws_lb_listener.http.arn
+  # O CodeDeploy precisa do ARN do listener que serve o tráfego de produção.
+  # Se HTTPS estiver habilitado, é o listener HTTPS.
+  # Se não, é o listener HTTP que faz o forward.
+  value = var.certificate_arn != "" ? aws_lb_listener.https[0].arn : aws_lb_listener.http_forward[0].arn
 }
