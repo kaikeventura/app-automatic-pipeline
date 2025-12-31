@@ -201,7 +201,9 @@ resource "aws_ecs_service" "this" {
   network_configuration {
     subnets         = var.private_subnet_ids
     security_groups = [var.ecs_security_group_id]
-    assign_public_ip = false
+
+    # MUDANÇA CRÍTICA: Habilitar IP Público para acesso à internet (Datadog)
+    assign_public_ip = true
   }
 
   load_balancer {

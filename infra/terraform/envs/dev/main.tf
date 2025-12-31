@@ -150,7 +150,10 @@ module "ecs" {
 
   region = var.region
 
-  private_subnet_ids    = module.network.private_subnet_ids
+  # MUDANÇA CRÍTICA: Usando subnets PÚBLICAS para o ECS ter acesso à internet (Datadog)
+  # sem pagar NAT Gateway.
+  private_subnet_ids    = module.network.public_subnet_ids
+
   ecs_security_group_id = module.security.ecs_sg_id
   target_group_arn      = module.alb.blue_target_group_arn
 
@@ -167,9 +170,7 @@ module "ecs" {
 
   datadog_api_key = var.datadog_api_key
 
-  # Passamos a URL do repo privado do Datadog
-  # Se o repo ainda não tiver imagem, vai falhar no deploy do ECS, mas o Terraform cria o repo antes.
-  # Você precisará fazer o push manual da imagem do Datadog para lá uma vez.
+  # Mantendo o uso do ECR Privado para a imagem do Datadog (Mirror)
   datadog_image = "${module.ecr_datadog.repository_url}:latest"
 }
 
