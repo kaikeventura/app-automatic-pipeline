@@ -12,6 +12,12 @@ locals {
 # =====================
 resource "aws_ecs_cluster" "this" {
   name = "${local.name}-cluster"
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+
   tags = local.tags
 }
 
@@ -115,41 +121,65 @@ resource "aws_ecs_task_definition" "this" {
   execution_role_arn = aws_iam_role.task_execution.arn
   task_role_arn      = aws_iam_role.task.arn
 
-  container_definitions = jsonencode([
-    {
-      name      = "api"
-      image     = var.ecr_image
-      essential = true
+  container_definitions = jsonencode(
+    concat(
+      [
+        {
+          name      = "api"
+          image     = var.ecr_image
+          essential = true
 
-      portMappings = [
-        { containerPort = var.app_port, hostPort = var.app_port, protocol = "tcp" }
-      ]
+          portMappings = [
+            { containerPort = var.app_port, hostPort = var.app_port, protocol = "tcp" }
+          ]
 
-      environment = [
-        { name = "AWS_REGION", value = var.region },
-        { name = "S3_BUCKET", value = var.s3_bucket_name },
-        { name = "SQS_QUEUE_PAYMENT_PROCESSING_URL", value = var.sqs_payment_processing_queue_url },
-        { name = "SQS_QUEUE_PAYMENT_RESULT_URL", value = var.sqs_payment_result_queue_url },
-        { name = "DB_HOST", value = var.db_host },
-        { name = "DB_PORT", value = "5432" },
-        { name = "DB_NAME", value = var.db_name }
-      ]
+          environment = [
+            { name = "AWS_REGION", value = var.region },
+            { name = "S3_BUCKET", value = var.s3_bucket_name },
+            { name = "SQS_QUEUE_PAYMENT_PROCESSING_URL", value = var.sqs_payment_processing_queue_url },
+            { name = "SQS_QUEUE_PAYMENT_RESULT_URL", value = var.sqs_payment_result_queue_url },
+            { name = "DB_HOST", value = var.db_host },
+            { name = "DB_PORT", value = "5432" },
+            { name = "DB_NAME", value = var.db_name }
+          ]
 
-      secrets = [
-        { name = "DB_USERNAME", valueFrom = "${var.db_secret_arn}:username::" },
-        { name = "DB_PASSWORD", valueFrom = "${var.db_secret_arn}:password::" }
-      ]
+          secrets = [
+            { name = "DB_USERNAME", valueFrom = "${var.db_secret_arn}:username::" },
+            { name = "DB_PASSWORD", valueFrom = "${var.db_secret_arn}:password::" }
+          ]
 
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          awslogs-group         = aws_cloudwatch_log_group.app.name
-          awslogs-region        = var.region
-          awslogs-stream-prefix = "api"
+          logConfiguration = {
+            logDriver = "awslogs"
+            options = {
+              awslogs-group         = aws_cloudwatch_log_group.app.name
+              awslogs-region        = var.region
+              awslogs-stream-prefix = "api"
+            }
+          }
         }
-      }
-    }
-  ])
+      ],
+      var.datadog_api_key != "" ? [
+        {
+          name      = "datadog-agent"
+          image     = "public.ecr.aws/datadog/agent:latest"
+          essential = true
+          environment = [
+            { name = "DD_API_KEY", value = var.datadog_api_key },
+            { name = "ECS_FARGATE", value = "true" },
+            { name = "DD_SITE", value = "datadoghq.com" }
+          ]
+          logConfiguration = {
+            logDriver = "awslogs"
+            options = {
+              awslogs-group         = aws_cloudwatch_log_group.app.name
+              awslogs-region        = var.region
+              awslogs-stream-prefix = "datadog"
+            }
+          }
+        }
+      ] : []
+    )
+  )
 
   tags = local.tags
 }

@@ -154,6 +154,8 @@ module "ecs" {
   s3_bucket_name                   = module.s3.bucket_name
   sqs_payment_processing_queue_url = module.sqs_payment_processing_queue.queue_url
   sqs_payment_result_queue_url     = module.sqs_payment_result_queue.queue_url
+
+  datadog_api_key = var.datadog_api_key
 }
 
 module "codedeploy" {

@@ -93,3 +93,10 @@ variable "enable_https" {
   type        = bool
   default     = false
 }
+
+variable "datadog_api_key" {
+  description = "API Key do Datadog (opcional)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
