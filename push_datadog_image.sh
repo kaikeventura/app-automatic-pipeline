@@ -5,14 +5,13 @@
 
 set -e
 
-AWS_PROFILE=app-automatic-pipeline-dev
 REGION="us-east-1"
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 ECR_URL="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
 REPO_NAME="datadog-agent"
 IMAGE_TAG="latest"
 
-echo "=== Iniciando processo de mirror da imagem do Datadog Agent ==="
+echo "=== Iniciando processo de mirror da imagem do Datadog Agent (ARM64) ==="
 echo "Conta AWS: ${ACCOUNT_ID}"
 echo "Região: ${REGION}"
 echo "ECR Destino: ${ECR_URL}/${REPO_NAME}:${IMAGE_TAG}"
@@ -22,9 +21,9 @@ echo ""
 echo "1. Fazendo login no ECR Public..."
 aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
 
-# 2. Pull da imagem original
-echo "2. Baixando imagem public.ecr.aws/datadog/agent:${IMAGE_TAG}..."
-docker pull public.ecr.aws/datadog/agent:${IMAGE_TAG}
+# 2. Pull da imagem original (FORÇANDO ARM64)
+echo "2. Baixando imagem public.ecr.aws/datadog/agent:${IMAGE_TAG} (platform linux/arm64)..."
+docker pull --platform linux/arm64 public.ecr.aws/datadog/agent:${IMAGE_TAG}
 
 # 3. Login no ECR Privado
 echo "3. Fazendo login no ECR Privado (${ECR_URL})..."
@@ -39,4 +38,5 @@ echo "5. Enviando imagem para o ECR Privado..."
 docker push ${ECR_URL}/${REPO_NAME}:${IMAGE_TAG}
 
 echo ""
-echo "=== Sucesso! Imagem do Datadog enviada para o ECR Privado. ==="
+echo "=== Sucesso! Imagem do Datadog (ARM64) enviada para o ECR Privado. ==="
+echo "Agora reinicie a task no ECS para pegar a nova imagem."
