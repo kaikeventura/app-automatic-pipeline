@@ -82,3 +82,9 @@ variable "datadog_image" {
   type        = string
   default     = "public.ecr.aws/datadog/agent:latest"
 }
+
+variable "datadog_site" {
+  description = "Site do Datadog (ex: datadoghq.com, us5.datadoghq.com, datadoghq.eu)"
+  type        = string
+  default     = "datadoghq.com"
+}

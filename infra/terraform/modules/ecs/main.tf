@@ -166,7 +166,7 @@ resource "aws_ecs_task_definition" "this" {
           environment = [
             { name = "DD_API_KEY", value = var.datadog_api_key },
             { name = "ECS_FARGATE", value = "true" },
-            { name = "DD_SITE", value = "datadoghq.com" }
+            { name = "DD_SITE", value = var.datadog_site }
           ]
           logConfiguration = {
             logDriver = "awslogs"

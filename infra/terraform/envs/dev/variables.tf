@@ -100,3 +100,9 @@ variable "datadog_api_key" {
   sensitive   = true
   default     = ""
 }
+
+variable "datadog_site" {
+  description = "Site do Datadog (ex: datadoghq.com, us5.datadoghq.com)"
+  type        = string
+  default     = "datadoghq.com"
+}
