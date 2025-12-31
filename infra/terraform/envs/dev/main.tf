@@ -56,6 +56,16 @@ module "ecr" {
   max_images = 2
 }
 
+# Novo repo para o Datadog Agent (Mirror)
+module "ecr_datadog" {
+  source = "../../modules/ecr"
+
+  project    = var.project
+  env        = var.env
+  repo_name  = "datadog-agent"
+  max_images = 1
+}
+
 module "rds" {
   source = "../../modules/rds"
 
@@ -156,6 +166,11 @@ module "ecs" {
   sqs_payment_result_queue_url     = module.sqs_payment_result_queue.queue_url
 
   datadog_api_key = var.datadog_api_key
+
+  # Passamos a URL do repo privado do Datadog
+  # Se o repo ainda não tiver imagem, vai falhar no deploy do ECS, mas o Terraform cria o repo antes.
+  # Você precisará fazer o push manual da imagem do Datadog para lá uma vez.
+  datadog_image = "${module.ecr_datadog.repository_url}:latest"
 }
 
 module "codedeploy" {

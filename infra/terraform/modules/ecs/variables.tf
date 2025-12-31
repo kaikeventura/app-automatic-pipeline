@@ -76,3 +76,9 @@ variable "datadog_api_key" {
   sensitive   = true
   default     = "" # Opcional, se não passar, não configura o sidecar (lógica a ser implementada)
 }
+
+variable "datadog_image" {
+  description = "Imagem do Datadog Agent (pode ser pública ou privada)"
+  type        = string
+  default     = "public.ecr.aws/datadog/agent:latest"
+}

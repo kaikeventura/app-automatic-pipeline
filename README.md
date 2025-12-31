@@ -38,6 +38,7 @@ Região: `us-east-1`
 - AWS CodeDeploy (ECS Blue/Green)
 - Terraform
 - GitHub Actions (OIDC)
+- **Datadog** (Observabilidade)
 
 ---
 
@@ -64,6 +65,29 @@ Região: `us-east-1`
 │       └── envs/dev
 └── .github/workflows/cd.yml
 ```
+
+---
+
+## 🐶 Datadog Agent (Ambiente Dev)
+
+Como o ambiente de desenvolvimento utiliza subnets privadas sem NAT Gateway (para economia de custos), as tarefas ECS não conseguem baixar a imagem do Datadog Agent diretamente do Docker Hub ou ECR Public.
+
+Para resolver isso, utilizamos um repositório ECR privado (`datadog-agent`) como mirror.
+
+### Como atualizar/enviar a imagem do Datadog
+
+Sempre que criar o ambiente do zero ou quiser atualizar a versão do agente, execute o script auxiliar:
+
+```bash
+chmod +x push_datadog_image.sh
+./push_datadog_image.sh
+```
+
+Este script irá:
+1. Autenticar no ECR Public.
+2. Baixar a imagem oficial do Datadog.
+3. Autenticar no seu ECR Privado.
+4. Enviar a imagem para o seu repositório privado.
 
 ---
 
@@ -243,4 +267,3 @@ aws secretsmanager delete-secret --secret-id app-automatic-pipeline-dev/rds/post
 ## 👤 Autor
 
 Projeto criado como **referência prática de arquitetura AWS moderna**, focado em **baixo custo**, **segurança** e **automação completa de deploy**.
-

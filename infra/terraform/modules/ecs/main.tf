@@ -161,7 +161,7 @@ resource "aws_ecs_task_definition" "this" {
       var.datadog_api_key != "" ? [
         {
           name      = "datadog-agent"
-          image     = "public.ecr.aws/datadog/agent:latest"
+          image     = var.datadog_image # Usando a variável da imagem
           essential = true
           environment = [
             { name = "DD_API_KEY", value = var.datadog_api_key },
