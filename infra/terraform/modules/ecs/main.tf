@@ -140,7 +140,13 @@ resource "aws_ecs_task_definition" "this" {
             { name = "SQS_QUEUE_PAYMENT_RESULT_URL", value = var.sqs_payment_result_queue_url },
             { name = "DB_HOST", value = var.db_host },
             { name = "DB_PORT", value = "5432" },
-            { name = "DB_NAME", value = var.db_name }
+            { name = "DB_NAME", value = var.db_name },
+
+            # Variáveis para APM e Logs do Datadog
+            { name = "DD_AGENT_HOST", value = "localhost" },
+            { name = "DD_SERVICE", value = var.project },
+            { name = "DD_ENV", value = var.env },
+            { name = "DD_LOGS_INJECTION", value = "true" }
           ]
 
           secrets = [
@@ -166,7 +172,13 @@ resource "aws_ecs_task_definition" "this" {
           environment = [
             { name = "DD_API_KEY", value = var.datadog_api_key },
             { name = "ECS_FARGATE", value = "true" },
-            { name = "DD_SITE", value = var.datadog_site }
+            { name = "DD_SITE", value = var.datadog_site },
+
+            # Habilitar APM e Logs
+            { name = "DD_APM_ENABLED", value = "true" },
+            { name = "DD_APM_NON_LOCAL_TRAFFIC", value = "true" },
+            { name = "DD_LOGS_ENABLED", value = "true" },
+            { name = "DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL", value = "true" }
           ]
           logConfiguration = {
             logDriver = "awslogs"

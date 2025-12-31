@@ -8,6 +8,12 @@ RUN mvn clean package -DskipTests
 # Run stage
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
+
+# Baixar o Datadog Java Agent
+ADD https://dtdg.co/latest-java-tracer /app/dd-java-agent.jar
+
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# Ativar o Java Agent na inicialização
+ENTRYPOINT ["java", "-javaagent:/app/dd-java-agent.jar", "-jar", "app.jar"]
