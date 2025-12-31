@@ -1,0 +1,55 @@
+openapi: "3.0.1"
+info:
+  title: "App Automatic Pipeline API"
+  version: "1.0.0"
+
+paths:
+  /events:
+    post:
+      summary: "Create a new event"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                totalTickets:
+                  type: integer
+                ticketPrice:
+                  type: number
+                image:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: "Event created successfully"
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri: "${alb_listener_arn}"
+        connectionType: "vpc_link"
+        connectionId: "${vpc_link_id}"
+        payloadFormatVersion: "1.0"
+
+  /tickets/purchase/{eventId}:
+    post:
+      summary: "Purchase a ticket"
+      parameters:
+        - name: "eventId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+            format: "uuid"
+      responses:
+        "200":
+          description: "Ticket purchased successfully"
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri: "${alb_listener_arn}"
+        connectionType: "vpc_link"
+        connectionId: "${vpc_link_id}"
+        payloadFormatVersion: "1.0"

@@ -170,6 +170,18 @@ module "codedeploy" {
   green_tg_name = module.alb.green_target_group_name
 }
 
+module "apigateway" {
+  source = "../../modules/apigateway"
+
+  project = var.project
+  env     = var.env
+
+  alb_listener_arn   = module.alb.listener_arn
+  vpc_id             = module.network.vpc_id
+  subnet_ids         = module.network.private_subnet_ids
+  security_group_ids = [module.security.vpce_sg_id] # Reutilizando SG de endpoints internos
+}
+
 
 module "github_oidc" {
   source = "../../modules/github_oidc"
