@@ -8,7 +8,7 @@ locals {
 }
 
 # ==========================================
-# VPC Link (Permite API Gateway -> ALB Privado/Interno)
+# VPC Link
 # ==========================================
 resource "aws_apigatewayv2_vpc_link" "this" {
   name               = "${local.name}-vpc-link"
@@ -25,16 +25,40 @@ resource "aws_apigatewayv2_api" "this" {
   name          = "${local.name}-api"
   protocol_type = "HTTP"
 
-  # Importante para definir o contrato via OpenAPI
-  # O arquivo agora está na raiz do projeto (app/openapi.yaml)
-  # path.module = infra/terraform/modules/apigateway
-  # ../../../../app/openapi.yaml leva para a raiz do projeto/app/openapi.yaml
-  body = templatefile("${path.module}/../../../../app/openapi.yaml", {
-    vpc_link_id    = aws_apigatewayv2_vpc_link.this.id
-    alb_listener_arn = var.alb_listener_arn
-  })
+  # Removido o body (OpenAPI) para usar recursos nativos
 
   tags = local.tags
+}
+
+# ==========================================
+# Integração com ALB
+# ==========================================
+resource "aws_apigatewayv2_integration" "alb" {
+  api_id           = aws_apigatewayv2_api.this.id
+  integration_type = "HTTP_PROXY"
+  integration_uri  = var.alb_listener_arn
+
+  integration_method = "ANY" # Método que o API Gateway usa para chamar o ALB
+  connection_type    = "VPC_LINK"
+  connection_id      = aws_apigatewayv2_vpc_link.this.id
+
+  payload_format_version = "1.0"
+}
+
+# ==========================================
+# Rotas
+# ==========================================
+
+resource "aws_apigatewayv2_route" "events" {
+  api_id    = aws_apigatewayv2_api.this.id
+  route_key = "POST /events"
+  target    = "integrations/${aws_apigatewayv2_integration.alb.id}"
+}
+
+resource "aws_apigatewayv2_route" "tickets" {
+  api_id    = aws_apigatewayv2_api.this.id
+  route_key = "POST /tickets/purchase/{eventId}"
+  target    = "integrations/${aws_apigatewayv2_integration.alb.id}"
 }
 
 # ==========================================
@@ -43,7 +67,7 @@ resource "aws_apigatewayv2_api" "this" {
 resource "aws_apigatewayv2_stage" "default" {
   api_id      = aws_apigatewayv2_api.this.id
   name        = "$default"
-  auto_deploy = true
+  auto_deploy = true # Com recursos nativos, auto_deploy funciona bem
 
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.api_gw.arn

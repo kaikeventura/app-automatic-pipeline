@@ -26,7 +26,7 @@ paths:
         "200":
           description: "Event created successfully"
       x-amazon-apigateway-integration:
-        type: "aws_proxy"
+        type: "http_proxy" # CORRIGIDO: http_proxy para ALB
         httpMethod: "POST"
         uri: "${alb_listener_arn}"
         connectionType: "vpc_link"
@@ -47,7 +47,7 @@ paths:
         "200":
           description: "Ticket purchased successfully"
       x-amazon-apigateway-integration:
-        type: "aws_proxy"
+        type: "http_proxy" # CORRIGIDO: http_proxy para ALB
         httpMethod: "POST"
         uri: "${alb_listener_arn}"
         connectionType: "vpc_link"
