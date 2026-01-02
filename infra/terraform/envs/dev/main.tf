@@ -194,10 +194,13 @@ module "apigateway" {
   project = var.project
   env     = var.env
 
+  alb_dns_name = module.alb.alb_dns_name # Passando o DNS do ALB
+
+  # Variáveis abaixo não são mais usadas, mas mantidas para compatibilidade se necessário
   alb_listener_arn   = module.alb.listener_arn
   vpc_id             = module.network.vpc_id
   subnet_ids         = module.network.private_subnet_ids
-  security_group_ids = [module.security.vpce_sg_id] # Reutilizando SG de endpoints internos
+  security_group_ids = [module.security.vpce_sg_id]
 }
 
 

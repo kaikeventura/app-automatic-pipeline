@@ -6,22 +6,32 @@ variable "env" {
   type = string
 }
 
-variable "alb_listener_arn" {
-  description = "ARN do listener do ALB para integração"
+variable "alb_dns_name" {
+  description = "DNS do ALB para integração pública"
   type        = string
+}
+
+# Variáveis abaixo não são mais usadas se removermos o VPC Link, mas vou manter para não quebrar chamadas antigas por enquanto
+variable "alb_listener_arn" {
+  description = "ARN do listener do ALB (não usado na integração pública)"
+  type        = string
+  default     = ""
 }
 
 variable "vpc_id" {
-  description = "ID da VPC para criar o VPC Link (se necessário)"
+  description = "ID da VPC (não usado na integração pública)"
   type        = string
+  default     = ""
 }
 
 variable "subnet_ids" {
-  description = "Subnets privadas para o VPC Link"
+  description = "Subnets privadas (não usado na integração pública)"
   type        = list(string)
+  default     = []
 }
 
 variable "security_group_ids" {
-  description = "Security Groups para o VPC Link"
+  description = "Security Groups (não usado na integração pública)"
   type        = list(string)
+  default     = []
 }
